@@ -1,9 +1,6 @@
 package com.example.pokemon.Entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class Pokemon {
@@ -15,21 +12,20 @@ public class Pokemon {
     private String name;
 
     private String type;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "veterinaire_id")
+    private Veterinaire veterinaire;
     public Pokemon() {
     }
 
-    public Pokemon(String name, String type) {
+    public Pokemon(String name, String type, Veterinaire veterinaire) {
         this.name = name;
         this.type = type;
+        this.veterinaire = veterinaire;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -46,5 +42,17 @@ public class Pokemon {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Veterinaire getVeterinaire() {
+        return veterinaire;
+    }
+
+    public void setVeterinaire(Veterinaire veterinaire) {
+        this.veterinaire = veterinaire;
     }
 }

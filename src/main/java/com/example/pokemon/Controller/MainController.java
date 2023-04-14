@@ -1,7 +1,9 @@
 package com.example.pokemon.Controller;
 
 import com.example.pokemon.Entity.Pokemon;
+import com.example.pokemon.Entity.Veterinaire;
 import com.example.pokemon.Repository.PokemonRepository;
+import com.example.pokemon.Repository.VeterinaireRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,9 @@ public class MainController {
 
     @Autowired
     PokemonRepository pokemonRepository;
+
+    @Autowired
+    VeterinaireRepository veterinaireRepository;
 
     @RequestMapping(value = "/post", method = RequestMethod.POST)
     public ResponseEntity<?> addPokemon(@RequestBody Pokemon pokemon){
@@ -79,6 +84,43 @@ public class MainController {
 
         pokemonRepository.deleteById(id);
         return new ResponseEntity<>("si ce pokémon existaitn il a été supprimé",HttpStatus.ACCEPTED);
+    }
+
+
+    // supprimer un pokemon par son nom
+
+    @RequestMapping(value = "delete/{name}", method = RequestMethod.DELETE)
+    public ResponseEntity<?> deletePokemon(@PathVariable String name){
+        if(pokemonRepository.findByName(name) != null){
+            pokemonRepository.deleteByName(name);
+            return new ResponseEntity<>("le pokémon a été supprimé",HttpStatus.ACCEPTED);
+        }else{
+            return new ResponseEntity<>("un pokémon n'existant pas ne peut pas être supprimé",HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    // supprimer un pokemon par son nom
+
+    @RequestMapping(value = "deleteveto/{name}", method = RequestMethod.DELETE)
+    public ResponseEntity<?> deleteVeterinaire(@PathVariable String name){
+        if(veterinaireRepository.findByName(name) != null){
+            // pour eviter tout conflit si ce veterinaire est en charge de pokémon je supprime leur veto associé
+            Veterinaire myVeto = veterinaireRepository.findByName(name);
+          List<Pokemon> pokemons = pokemonRepository.findAllPokemonByVeterinaire(myVeto.getId());
+          for(Pokemon poke : pokemons){
+              // je leur met un vétérinaire sans propriété pour les délié de mon veterinaire
+              poke.setVeterinaire(null);
+              pokemonRepository.save(poke);
+          }
+
+            // je peux maintenant supprimer mon veterinaire
+            veterinaireRepository.deleteById(myVeto.getId());
+            return new ResponseEntity<>("le veterinaire a été supprimé",HttpStatus.ACCEPTED);
+        }else{
+            return new ResponseEntity<>("un veterinaire n'existant pas ne peut pas être supprimé",HttpStatus.BAD_REQUEST);
+        }
+
     }
 
 }
